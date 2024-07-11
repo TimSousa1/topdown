@@ -1,6 +1,9 @@
+#include <math.h>
 #include <stdio.h>
-#include <raylib.h>
 #include <string.h>
+
+#include <raylib.h>
+#include <raymath.h>
 
 #define SCREEN_W 1080
 #define SCREEN_H 720
@@ -16,10 +19,13 @@
 
 #define s2v2(a) (Vector2) {a, a}
 
+
 typedef struct {
     Vector2 pos;
     Vector2 speed;
+
     float size;
+    Vector2 dir;
 
     Vector2 pointer_pos;
     float pointer_size;
@@ -28,11 +34,13 @@ typedef struct {
     Color color;
 } Player;
 
+
 void print_player(Player player) {
-    printf("pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\n",
+    printf("pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\ndir:(%f,%f)\n",
             player.pos.x, player.pos.y, player.speed.x, player.speed.y, player.size, player.pointer_pos.x, player.pointer_pos.y,
-            player.pointer_size, player.movespeed);
+            player.pointer_size, player.movespeed, player.dir.x, player.dir.y);
 }
+
 
 Vector2 convert_spaces(Vector2 vec, Vector2 spacefrom_size, Vector2 spaceto_size){
     Vector2 ret;
@@ -40,6 +48,7 @@ Vector2 convert_spaces(Vector2 vec, Vector2 spacefrom_size, Vector2 spaceto_size
     ret.y = vec.y * (spaceto_size.y / spacefrom_size.y);
     return ret;
 }
+
 
 void init_player(Player *player, Color color) {
     memset(player, 0, sizeof(*player));
@@ -49,14 +58,30 @@ void init_player(Player *player, Color color) {
     player->pointer_size = DEFAULT_POINTER_SIZE;
 }
 
+
 void draw_player(Player player, Vector2 world, Vector2 screen) {
-    DrawRectangleV(convert_spaces(player.pos, world, screen),
-            convert_spaces(s2v2(player.size), world, screen),
-            player.color);
-    DrawRectangleV(convert_spaces(player.pointer_pos, world, screen),
-            convert_spaces(s2v2(player.pointer_size), world, screen),
-            BLACK);
+    Vector2 player_screen_pos, player_screen_size;
+    Vector2 pointer_screen_pos, pointer_screen_size;
+
+    pointer_screen_size = convert_spaces(s2v2(player.pointer_size), world, screen);
+    player_screen_size = convert_spaces(s2v2(player.size), world, screen);
+
+    pointer_screen_pos = Vector2Add(convert_spaces(player.pointer_pos, world, screen), Vector2Scale(pointer_screen_size, .5));
+    player_screen_pos = Vector2Add(convert_spaces(player.pos, world, screen), Vector2Scale(player_screen_size, .5));
+
+    float angle = RAD2DEG * atanf(player.dir.y / player.dir.x);
+
+    DrawRectanglePro((Rectangle) {
+                .x = player_screen_pos.x, 
+                .y = player_screen_pos.y,
+                .width = player_screen_size.x,
+                .height = player_screen_size.y
+            },
+            (Vector2) {player_screen_size.x/2, player_screen_size.y/2}, angle, player.color);
+
+    DrawRectangleV(pointer_screen_pos, pointer_screen_size, BLACK);
 }
+
 
 int main(void) {
     Vector2 screen = {SCREEN_W, SCREEN_H};
@@ -72,8 +97,10 @@ int main(void) {
 
     while (!WindowShouldClose()) {
         myself.pointer_pos = convert_spaces(GetMousePosition(), screen, world);
+        myself.dir = Vector2Subtract(myself.pos, myself.pointer_pos);
 
         ClearBackground(DARKGRAY);
+        print_player(myself);
         BeginDrawing();
             {
                 draw_player(myself, world, screen);
