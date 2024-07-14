@@ -1,6 +1,6 @@
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -35,6 +35,8 @@ typedef struct {
 } Player;
 
 
+
+
 void print_player(Player player) {
     printf("pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\ndir:(%f,%f)\n",
             player.pos.x, player.pos.y, player.speed.x, player.speed.y, player.size, player.pointer_pos.x, player.pointer_pos.y,
@@ -66,8 +68,8 @@ void draw_player(Player player, Vector2 world, Vector2 screen) {
     pointer_screen_size = convert_spaces(s2v2(player.pointer_size), world, screen);
     player_screen_size = convert_spaces(s2v2(player.size), world, screen);
 
-    pointer_screen_pos = Vector2Add(convert_spaces(player.pointer_pos, world, screen), Vector2Scale(pointer_screen_size, .5));
-    player_screen_pos = Vector2Add(convert_spaces(player.pos, world, screen), Vector2Scale(player_screen_size, .5));
+    pointer_screen_pos = Vector2Add(convert_spaces(player.pointer_pos, world, screen), Vector2Scale(pointer_screen_size, -.5));
+    player_screen_pos = convert_spaces(player.pos, world, screen);
 
     float angle = RAD2DEG * atanf(player.dir.y / player.dir.x);
 
@@ -82,6 +84,12 @@ void draw_player(Player player, Vector2 world, Vector2 screen) {
     DrawRectangleV(pointer_screen_pos, pointer_screen_size, BLACK);
 }
 
+void draw_debug(Player player, Vector2 world, Vector2 screen) {
+    Vector2 player_screen_pos = convert_spaces(player.pos, world, screen);
+    Vector2 dir_norm_screen = Vector2Add(convert_spaces(Vector2Scale(Vector2Normalize(player.dir), player.size), world, screen), player_screen_pos);
+
+    DrawLine(player_screen_pos.x, player_screen_pos.y, dir_norm_screen.x, dir_norm_screen.y, GREEN);
+}
 
 int main(void) {
     Vector2 screen = {SCREEN_W, SCREEN_H};
@@ -98,12 +106,14 @@ int main(void) {
     while (!WindowShouldClose()) {
         myself.pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         myself.dir = Vector2Subtract(myself.pos, myself.pointer_pos);
+        myself.dir = Vector2Scale(myself.dir, -1);
 
         ClearBackground(DARKGRAY);
         print_player(myself);
         BeginDrawing();
             {
                 draw_player(myself, world, screen);
+                draw_debug(myself, world, screen);
             }
         EndDrawing();
     }
