@@ -4,7 +4,7 @@
 
 #define DEFAULT_PLAYER_SIZE 2.3
 #define DEFAULT_POINTER_SIZE 1
-#define DEFAULT_PLAYER_SPEED 1
+#define DEFAULT_PLAYER_SPEED 30
 
 typedef struct {
     Vector2 pos;
@@ -22,5 +22,6 @@ typedef struct {
 
 void init_player(Player *player, Color color);
 void print_player(Player player);
+Vector2 get_move_dir(void);
 
 #endif

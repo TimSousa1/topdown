@@ -22,6 +22,9 @@ int main(void) {
         myself.dir = Vector2Subtract(myself.pos, myself.pointer_pos);
         myself.dir = Vector2Scale(myself.dir, -1);
 
+        myself.speed = Vector2Scale(get_move_dir(), myself.movespeed);
+        myself.pos = Vector2Add(myself.pos, Vector2Scale(myself.speed, GetFrameTime()));
+
         ClearBackground(DARKGRAY);
         print_player(myself);
         BeginDrawing();
