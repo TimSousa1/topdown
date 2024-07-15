@@ -14,22 +14,23 @@ LDLIBS := `pkg-config raylib --libs` -lm
 
 SRCDIR := src
 BUILDDIR := build
+INCDIR := include
 
 SRC := $(shell find $(SRCDIR) -name *.c)
 
 _OBJ := $(SRC:%.c=%.o)
 OBJ := $(subst $(SRCDIR),$(BUILDDIR),$(_OBJ))
 
-DEPS := $(shell find src -name *.h)
+DEPS := $(shell find $(INCDIR) -name *.h)
 OUT_NAME := topdown
 
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.c $(DEPS) | $(BUILDDIR)
-	$(CC) -c $< $(CFLAGS) $(WARN) $(LDLIBS) -o $@ 
+	$(CC) -c $< -I$(INCDIR) $(CFLAGS) $(WARN) $(LDLIBS) -o $@ 
 
 
 $(BUILDDIR)/$(OUT_NAME) : $(OBJ)
-	$(CC) $^ $(CFLAGS) $(WARN) $(LDLIBS) -o $@
+	$(CC) $^ -I$(INCDIR) $(CFLAGS) $(WARN) $(LDLIBS) -o $@
 
 
 .PHONY: $(BUILDDIR)
