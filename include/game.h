@@ -13,4 +13,7 @@
 
 #define s2v2(a) (Vector2) {a, a}
 
+#define PORT "44556"
+#define ROOM_SIZE 2
+
 #endif

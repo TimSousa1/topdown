@@ -1,7 +1,11 @@
+// game
 #include "game.h"
 #include "player.h"
 
+// stdlib
 #include <math.h>
+
+// raylib
 #include <raylib.h>
 #include <raymath.h>
 
