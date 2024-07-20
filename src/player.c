@@ -28,5 +28,4 @@ Vector2 get_move_dir(void) {
     move_dir.x += IsKeyDown(KEY_D);
 
     return Vector2Normalize(move_dir);
-
 }
