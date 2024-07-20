@@ -1,9 +1,13 @@
+// game
 #include "player.h"
-#include <raylib.h>
-#include <raymath.h>
+
+// stdlib
 #include <stdio.h>
 #include <string.h>
 
+// raylib
+#include <raylib.h>
+#include <raymath.h>
 
 void init_player(Player *player, Color color) {
     memset(player, 0, sizeof(*player));
@@ -11,6 +15,7 @@ void init_player(Player *player, Color color) {
     player->size = DEFAULT_PLAYER_SIZE;
     player->color = color;
     player->pointer_size = DEFAULT_POINTER_SIZE;
+    player->dir = (Vector2) {0, 1};
 }
 
 
