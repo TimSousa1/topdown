@@ -12,6 +12,8 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
+#define TICK_RATE 64
+
 struct con_t {
     int sock_fd;
     struct sockaddr sock;
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
     Color colors[4] = {BLUE, RED, YELLOW, GREEN};
     for (int i = 0; i < ROOM_SIZE; i++) {
         init_player(&players[i], colors[i]);
+        players[i].id = i;
         players[i].pos = (Vector2){(float)(i * 2 + 1) * WORLD_W / (4),
             (float)WORLD_H / 2}; // will depend on each map..
         send(cons[i].sock_fd, &players[i], sizeof(players[i]), 0);

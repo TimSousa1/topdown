@@ -7,6 +7,8 @@
 #define DEFAULT_PLAYER_SPEED 30
 
 typedef struct {
+    int id;
+
     Vector2 pos;
     Vector2 speed;
 

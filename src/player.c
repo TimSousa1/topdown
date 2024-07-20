@@ -20,10 +20,11 @@ void init_player(Player *player, Color color) {
 
 
 void print_player(Player player) {
-    printf("pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\ndir:(%f,%f)\n",
-            player.pos.x, player.pos.y, player.speed.x, player.speed.y, player.size, player.pointer_pos.x, player.pointer_pos.y,
+    printf("id: %d, pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\ndir:(%f,%f)\n",
+            player.id, player.pos.x, player.pos.y, player.speed.x, player.speed.y, player.size, player.pointer_pos.x, player.pointer_pos.y,
             player.pointer_size, player.movespeed, player.dir.x, player.dir.y);
 }
+
 
 Vector2 get_move_dir(void) {
     Vector2 move_dir = {0};
