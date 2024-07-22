@@ -2,6 +2,7 @@
 #include "game.h"
 #include "draw.h"
 #include "player.h"
+#include "server.h"
 
 // raylib
 #include <raylib.h>
@@ -25,19 +26,28 @@ typedef struct {
 } thread_arg;
 
 
-typedef struct {
-    Vector2 move_dir;
-} packet;
-
-
 void *thread_send(void *info) {
     thread_arg arg = *(thread_arg*) info;
     packet pack;
 
+    // sends packet fps times per second
     while (1) {
         read(arg.pipe_fd[0], &pack, sizeof(pack));
-        printf("move_dir: "); printv2(pack.move_dir); puts("");
-        send(arg.sock_fd, &pack, sizeof(pack), 0);
+        printf("sent move_dir: "); printv2(pack.move_dir); puts("");
+        send(arg.sock_fd, &pack, sizeof(pack), 0); 
+    }
+    return NULL;
+}
+
+void *thread_recv(void *info) {
+    thread_arg arg = *(thread_arg*) info;
+    packet pack;
+
+    // receives packet fps times per second
+    while (1) {
+        recv(arg.sock_fd, &pack, sizeof(pack), 0); 
+        printf("received move_dir: "); printv2(pack.move_dir); puts("");
+        write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;
 }
@@ -95,15 +105,15 @@ int main(int argc, char **argv) {
     HideCursor();
 
     // net
-    int sock = setup_net(argv[1]);
+    int server_sock = setup_net(argv[1]);
     Player players[ROOM_SIZE];
-    recv(sock, &players[0], sizeof(players[0]), 0);
+    recv(server_sock, &players[0], sizeof(players[0]), 0);
 
 
     for (int i = 0; i < ROOM_SIZE-1; i++) {
-        recv(sock, &players[i+1], sizeof(players[i]), 0);
+        recv(server_sock, &players[i+1], sizeof(players[i]), 0);
     }
-    
+
     Player *myself = &players[0];
     for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
 
@@ -112,14 +122,18 @@ int main(int argc, char **argv) {
     // thread
     thread_arg thread_s;
     pipe(thread_s.pipe_fd);
+    thread_s.sock_fd = server_sock;
 
     thread_arg thread_r;
     pipe(thread_r.pipe_fd);
+    thread_r.sock_fd = server_sock;
 
     pthread_t threads[2];
     pthread_create(&threads[0], NULL, thread_send, &thread_s);
+    pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
     packet p_send = {0};
+    packet p_recv = {0};
     int b = 0;
     while (!WindowShouldClose()) {
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
@@ -127,7 +141,6 @@ int main(int argc, char **argv) {
         myself->dir = Vector2Scale(myself->dir, -1);
 
         move_dir = get_move_dir();
-        printv2(move_dir);
         myself->speed = Vector2Scale(move_dir, myself->movespeed);
         myself->pos = Vector2Add(myself->pos, Vector2Scale(myself->speed, GetFrameTime()));
 
@@ -136,15 +149,24 @@ int main(int argc, char **argv) {
         if (b == -1) {
             perror("Couldn't send packet to thread_s!\n");
         }
+
+        b = read(thread_r.pipe_fd[0], &p_recv, sizeof(p_recv));
+        if (b == -1) {
+            perror("Couldn't send packet to thread_s!\n");
+        }
+
+        players[1].speed = Vector2Scale(p_recv.move_dir, players[1].movespeed);
+        players[1].pos = Vector2Add(players[1].pos, Vector2Scale(players[1].speed, GetFrameTime()));
+
         ClearBackground(DARKGRAY);
-        //print_player(*myself);
+        // print_player(*myself);
         BeginDrawing();
-            {
-                for (int i = 0; i < ROOM_SIZE; i++) {
-                    draw_player(players[i], world, screen);
-                }
-                draw_debug(*myself, world, screen);
+        {
+            for (int i = 0; i < ROOM_SIZE; i++) {
+                draw_player(players[i], world, screen);
             }
+            draw_debug(*myself, world, screen);
+        }
         EndDrawing();
     }
 

@@ -1,6 +1,7 @@
 // game
 #include "game.h"
 #include "player.h"
+#include "server.h"
 
 // stdlib
 #include <netinet/in.h>
@@ -11,6 +12,12 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
+
+// raylib
+#include <raylib.h>
+#include <raymath.h>
+#include <unistd.h>
+
 
 #define TICK_RATE 64
 
@@ -134,6 +141,22 @@ int main(int argc, char **argv) {
     }
 
     printf("sent!\n");
+    packet pack[ROOM_SIZE] = {0};
+
+    while(1){
+        for (int i = 0; i < ROOM_SIZE; i++) {
+            recv(cons[i].sock_fd, &pack[i], sizeof(pack[i]), 0);
+            if (i == 0) {printv2(pack[i].move_dir);puts("");}
+        }
+
+        for (int i = 0; i < ROOM_SIZE; i++) {
+            for (int j = 0; j < ROOM_SIZE; j++) {
+                if (i == j) continue;
+                send(cons[j].sock_fd, &pack[i], sizeof(pack[i]), 0);
+            }
+        }
+    }
+
 
     return 0;
 }
