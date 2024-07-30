@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
             for (int j = 0; j < ROOM_SIZE; j++) {
                 if (i == j) continue;
 
-                pack_out[i].move_dir = players[i].pos;
+                pack_out[i].pos = players[i].pos;
                 send(cons[j].sock_fd, &pack_out[i], sizeof(pack_out[i]), 0);
             }
         }
