@@ -48,7 +48,7 @@ void *thread_recv(void *info) {
     // receives packet fps times per second
     while (1) {
         recv(arg.sock_fd, &pack, sizeof(pack), 0); 
-        printf("received move_dir: "); printv2(pack.move_dir); puts("");
+        printf("received move_dir: "); printv2(pack.pos); puts("");
         write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;
@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
             perror("Couldn't send packet to thread_s!\n");
         }
 
-        players[1].pos = p_recv.move_dir;
+        players[1].pos = p_recv.pos;
 
         ClearBackground(DARKGRAY);
         // print_player(*myself);
