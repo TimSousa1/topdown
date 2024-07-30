@@ -4,6 +4,10 @@
 
 typedef struct {
     Vector2 move_dir;
-} packet;
+} packet_input;
+
+typedef struct {
+    Vector2 pos;
+} packet_output;
 
 #endif
