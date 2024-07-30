@@ -6,6 +6,7 @@
 // stdlib
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // networking stuff
@@ -16,6 +17,7 @@
 // raylib
 #include <raylib.h>
 #include <raymath.h>
+#include <time.h>
 #include <unistd.h>
 
 
@@ -123,8 +125,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < ROOM_SIZE; i++) {
         init_player(&players[i], colors[i]);
         players[i].id = i;
-        players[i].pos = (Vector2){(float)(i * 2 + 1) * WORLD_W / (4),
-            (float)WORLD_H / 2}; // will depend on each map..
+        players[i].pos = (Vector2){ (float) (i +.5) * WORLD_W / (ROOM_SIZE), (float)WORLD_H / 2}; // will depend on each map..
         send(cons[i].sock_fd, &players[i], sizeof(players[i]), 0);
     }
 
@@ -141,20 +142,39 @@ int main(int argc, char **argv) {
     }
 
     printf("sent!\n");
-    packet pack[ROOM_SIZE] = {0};
+    packet_input pack_in[ROOM_SIZE] = {0};
+    packet_output pack_out[ROOM_SIZE] = {0};
 
+    struct timespec diff = {0};
     while(1){
+        struct timespec start, end, to_sleep;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+
         for (int i = 0; i < ROOM_SIZE; i++) {
-            recv(cons[i].sock_fd, &pack[i], sizeof(pack[i]), 0);
-            if (i == 0) {printv2(pack[i].move_dir);puts("");}
+            recv(cons[i].sock_fd, &pack_in[i], sizeof(pack_in[i]), 0);
+            //if (i == 0) {printv2(pack_in[i].move_dir);puts("");}
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
+            players[i].speed = Vector2Scale(pack_in[i].move_dir, players[i].movespeed);
+            players[i].pos = Vector2Add(players[i].pos, Vector2Scale(players[i].speed, diff.tv_sec + diff.tv_nsec/1e9));
+
             for (int j = 0; j < ROOM_SIZE; j++) {
                 if (i == j) continue;
-                send(cons[j].sock_fd, &pack[i], sizeof(pack[i]), 0);
+
+                pack_out[i].move_dir = players[i].pos;
+                send(cons[j].sock_fd, &pack_out[i], sizeof(pack_out[i]), 0);
             }
         }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        diff.tv_sec = end.tv_sec - start.tv_sec;
+        diff.tv_nsec = end.tv_nsec - start.tv_nsec;
+
+        to_sleep.tv_sec = 0 - diff.tv_sec;
+        to_sleep.tv_nsec = 1e9/TICK_RATE - diff.tv_nsec;
+
+        if (to_sleep.tv_sec > 0) continue;
+        nanosleep(&to_sleep, NULL);
     }
 
 

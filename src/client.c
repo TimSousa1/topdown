@@ -19,6 +19,8 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
+#include <fcntl.h>
+
 
 typedef struct {
     int pipe_fd[2];
@@ -28,7 +30,7 @@ typedef struct {
 
 void *thread_send(void *info) {
     thread_arg arg = *(thread_arg*) info;
-    packet pack;
+    packet_input pack;
 
     // sends packet fps times per second
     while (1) {
@@ -41,7 +43,7 @@ void *thread_send(void *info) {
 
 void *thread_recv(void *info) {
     thread_arg arg = *(thread_arg*) info;
-    packet pack;
+    packet_output pack;
 
     // receives packet fps times per second
     while (1) {
@@ -127,14 +129,16 @@ int main(int argc, char **argv) {
     thread_arg thread_r;
     pipe(thread_r.pipe_fd);
     thread_r.sock_fd = server_sock;
+    fcntl(thread_r.pipe_fd[0], F_SETFL, O_NONBLOCK);
 
     pthread_t threads[2];
     pthread_create(&threads[0], NULL, thread_send, &thread_s);
     pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
-    packet p_send = {0};
-    packet p_recv = {0};
+    packet_input p_send = {0};
+    packet_output p_recv = {0};
     int b = 0;
+
     while (!WindowShouldClose()) {
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         myself->dir = Vector2Subtract(myself->pos, myself->pointer_pos);
@@ -155,8 +159,7 @@ int main(int argc, char **argv) {
             perror("Couldn't send packet to thread_s!\n");
         }
 
-        players[1].speed = Vector2Scale(p_recv.move_dir, players[1].movespeed);
-        players[1].pos = Vector2Add(players[1].pos, Vector2Scale(players[1].speed, GetFrameTime()));
+        players[1].pos = p_recv.move_dir;
 
         ClearBackground(DARKGRAY);
         // print_player(*myself);
