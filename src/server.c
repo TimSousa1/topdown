@@ -20,8 +20,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <fcntl.h>
 
-#define TICK_RATE 64
+
+#define TICK_RATE 128
 
 struct con_t {
     int sock_fd;
@@ -145,14 +147,16 @@ int main(int argc, char **argv) {
     packet_input pack_in[ROOM_SIZE] = {0};
     packet_output pack_out[ROOM_SIZE] = {0};
 
+    for (int i = 0; i < ROOM_SIZE; i++) fcntl(cons[i].sock_fd, F_SETFL, O_NONBLOCK);
+
     struct timespec diff = {0};
     while(1){
         struct timespec start, end, to_sleep;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            recv(cons[i].sock_fd, &pack_in[i], sizeof(pack_in[i]), 0);
-            //if (i == 0) {printv2(pack_in[i].move_dir);puts("");}
+            while (recv(cons[i].sock_fd, &pack_in[i], sizeof(pack_in[i]), 0) > 0);
+            // if (i == 0) {printv2(pack_in[i].move_dir);puts("");}
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
@@ -164,17 +168,23 @@ int main(int argc, char **argv) {
 
                 pack_out[i].pos = players[i].pos;
                 send(cons[j].sock_fd, &pack_out[i], sizeof(pack_out[i]), 0);
+                if (i == 0) printf("%f %f\n", pack_out[i].pos.x, pack_out[i].pos.y);
             }
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
-        diff.tv_sec = end.tv_sec - start.tv_sec;
+        diff.tv_sec = end.tv_sec - start.tv_sec;      // TODO: change diff time calculation
         diff.tv_nsec = end.tv_nsec - start.tv_nsec;
 
         to_sleep.tv_sec = 0 - diff.tv_sec;
         to_sleep.tv_nsec = 1e9/TICK_RATE - diff.tv_nsec;
 
-        if (to_sleep.tv_sec > 0) continue;
-        nanosleep(&to_sleep, NULL);
+        if (to_sleep.tv_sec < 0 || to_sleep.tv_nsec < 0) {/*printf("not sleeping!\n");*/ continue;}
+        nanosleep(&to_sleep, NULL); 
+        // printf("sleeping!\n");
+
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        diff.tv_sec = end.tv_sec - start.tv_sec;
+        diff.tv_nsec = end.tv_nsec - start.tv_nsec;
     }
 
 

@@ -35,7 +35,7 @@ void *thread_send(void *info) {
     // sends packet fps times per second
     while (1) {
         read(arg.pipe_fd[0], &pack, sizeof(pack));
-        printf("sent move_dir: "); printv2(pack.move_dir); puts("");
+        // printf("sent move_dir: "); printv2(pack.move_dir); puts("");
         send(arg.sock_fd, &pack, sizeof(pack), 0); 
     }
     return NULL;
@@ -45,10 +45,10 @@ void *thread_recv(void *info) {
     thread_arg arg = *(thread_arg*) info;
     packet_output pack;
 
-    // receives packet fps times per second
+    int b = 0;
     while (1) {
-        recv(arg.sock_fd, &pack, sizeof(pack), 0); 
-        printf("received move_dir: "); printv2(pack.pos); puts("");
+        b = recv(arg.sock_fd, &pack, sizeof(pack), 0);
+        // printf("received move_dir: "); printv2(pack.pos); puts("");
         write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;
@@ -154,10 +154,7 @@ int main(int argc, char **argv) {
             perror("Couldn't send packet to thread_s!\n");
         }
 
-        b = read(thread_r.pipe_fd[0], &p_recv, sizeof(p_recv));
-        if (b == -1) {
-            perror("Couldn't send packet to thread_s!\n");
-        }
+        while ((b = read(thread_r.pipe_fd[0], &p_recv, sizeof(p_recv))) > 0);
 
         players[1].pos = p_recv.pos;
 
