@@ -17,4 +17,8 @@
 #define PORT "44556"
 #define ROOM_SIZE 2
 
+
+// issues:
+// if fps != tick_rate, sock_fd gets clogged
+
 #endif
