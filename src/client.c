@@ -109,17 +109,39 @@ int main(int argc, char **argv) {
     // net
     int server_sock = setup_net(argv[1]);
     Player players[ROOM_SIZE];
-    recv(server_sock, &players[0], sizeof(players[0]), 0);
+    Player *myself = NULL;
+    packet_output initial;
 
-
-    for (int i = 0; i < ROOM_SIZE-1; i++) {
-        recv(server_sock, &players[i+1], sizeof(players[i]), 0);
+    for (int i = 0; i < ROOM_SIZE; i++) {
+        init_player(&players[i], get_player_color(i));
+        players[i].id = i;
     }
 
-    Player *myself = &players[0];
+    // get all initial player info
+    recv(server_sock, &initial, sizeof(initial), 0);
+
+    for (int i = 0; i < ROOM_SIZE; i++) {
+        printf("id:%d, pos:(%f, %f)\n", initial.players[i].id, initial.players[i].pos.x, initial.players[i].pos.y);
+    }
+
+    for (int i = 0; i < ROOM_SIZE; i++) {
+        players[i].pos = initial.players[i].pos;
+
+        if (initial.players[i].id < 0) {
+            myself = &players[i];
+            myself->id *= -1;
+            break;
+        }
+    }
+    for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
+    // exit if player is not set
+    if (!myself) {
+        printf("couldn't set YOUR player!\n");
+        return -1;
+    }
+
     for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
 
-    Vector2 move_dir;
 
     // thread
     thread_arg thread_s;
@@ -140,6 +162,8 @@ int main(int argc, char **argv) {
     int b = 0;
 
     while (!WindowShouldClose()) {
+        Vector2 move_dir;
+
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         myself->dir = Vector2Subtract(myself->pos, myself->pointer_pos);
         myself->dir = Vector2Scale(myself->dir, -1);
@@ -148,7 +172,7 @@ int main(int argc, char **argv) {
         myself->speed = Vector2Scale(move_dir, myself->movespeed);
         myself->pos = Vector2Add(myself->pos, Vector2Scale(myself->speed, GetFrameTime()));
 
-        p_send.move_dir = move_dir;
+        p_send.player.move_dir = move_dir;
         b = write(thread_s.pipe_fd[1], &p_send, sizeof(p_send));
         if (b == -1) {
             perror("Couldn't send packet to thread_s!\n");
@@ -156,7 +180,10 @@ int main(int argc, char **argv) {
 
         while ((b = read(thread_r.pipe_fd[0], &p_recv, sizeof(p_recv))) > 0);
 
-        players[1].pos = p_recv.pos;
+        for (int i = 0; i < ROOM_SIZE; i++) {
+            if (i == myself->id) continue; // not caring about what the server thinks of us for now.
+            players[i].pos = p_recv.players[i].pos;
+        }
 
         ClearBackground(DARKGRAY);
         // print_player(*myself);
