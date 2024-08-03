@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include <raylib.h>
+#include "game.h"
 
 #define DEFAULT_PLAYER_SIZE 2.3
 #define DEFAULT_POINTER_SIZE 1
@@ -25,5 +26,6 @@ typedef struct {
 void init_player(Player *player, Color color);
 void print_player(Player player);
 Vector2 get_move_dir(void);
+Color get_player_color(int index);
 
 #endif

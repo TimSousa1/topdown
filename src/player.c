@@ -9,6 +9,14 @@
 #include <raylib.h>
 #include <raymath.h>
 
+const Color player_colors[] = { BLUE, RED, GREEN, YELLOW,
+                                ORANGE, PURPLE, DARKBLUE, DARKGREEN };
+
+
+Color get_player_color(int i) {
+    return player_colors[i];
+}
+
 void init_player(Player *player, Color color) {
     memset(player, 0, sizeof(*player));
     player->movespeed = DEFAULT_PLAYER_SPEED;

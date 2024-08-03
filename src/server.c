@@ -123,29 +123,39 @@ int main(int argc, char **argv) {
     printf("attempting to send player info.\n");
 
     Player players[ROOM_SIZE];
-    Color colors[4] = {BLUE, RED, YELLOW, GREEN};
+
+    packet_output initial;
     for (int i = 0; i < ROOM_SIZE; i++) {
-        init_player(&players[i], colors[i]);
+        init_player(&players[i], get_player_color(i));
         players[i].id = i;
         players[i].pos = (Vector2){ (float) (i +.5) * WORLD_W / (ROOM_SIZE), (float)WORLD_H / 2}; // will depend on each map..
-        send(cons[i].sock_fd, &players[i], sizeof(players[i]), 0);
+
+        initial.players[i].pos = players[i].pos;
     }
 
+    // initial id's have to start at 1 since -0 doesn't exist (it does, but you get me :) )
+    printf("----- PACKET -----\n");
+    for (int i = 0; i < ROOM_SIZE; i++) {
+        initial.players[i].id = -(i+1); // a negative id tells the connection what it's index is on the server
+        printf("id:%d pos:(%f, %f)\n", initial.players[i].id, initial.players[i].pos.x, initial.players[i].pos.y);
+        send(cons[i].sock_fd, &initial, sizeof(initial), 0);
+        initial.players[i].id = i+1;
+    }
+
+    // resetting id's to their original value
+    for (int i = 0; i < ROOM_SIZE; i++) {
+        initial.players[i].id = i;
+    }
+
+
+    printf("----- PLAYERS -----\n");
     for (int i = 0; i < ROOM_SIZE; i++) {
         print_player(players[i]);
     }
 
-    for (int i = 0; i < ROOM_SIZE; i++) {
-        for (int j = 0; j < ROOM_SIZE; j++) {
-            if (i == j)
-                continue;
-            send(cons[i].sock_fd, &players[j], sizeof(players[j]), 0);
-        }
-    }
-
     printf("sent!\n");
     packet_input pack_in[ROOM_SIZE] = {0};
-    packet_output pack_out[ROOM_SIZE] = {0};
+    packet_output pack_out = {0};
 
     for (int i = 0; i < ROOM_SIZE; i++) fcntl(cons[i].sock_fd, F_SETFL, O_NONBLOCK);
 
@@ -160,17 +170,16 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            players[i].speed = Vector2Scale(pack_in[i].move_dir, players[i].movespeed);
+            players[i].speed = Vector2Scale(pack_in[i].player.move_dir, players[i].movespeed);
             players[i].pos = Vector2Add(players[i].pos, Vector2Scale(players[i].speed, diff.tv_sec + diff.tv_nsec/1e9));
 
-            for (int j = 0; j < ROOM_SIZE; j++) {
-                if (i == j) continue;
-
-                pack_out[i].pos = players[i].pos;
-                send(cons[j].sock_fd, &pack_out[i], sizeof(pack_out[i]), 0);
-                if (i == 0) printf("%f %f\n", pack_out[i].pos.x, pack_out[i].pos.y);
-            }
+            pack_out.players[i].pos = players[i].pos;
         }
+
+        for (int i = 0; i < ROOM_SIZE; i++) {
+            send(cons[i].sock_fd, &pack_out, sizeof(pack_out), 0);
+        }
+
         clock_gettime(CLOCK_MONOTONIC, &end);
         diff.tv_sec = end.tv_sec - start.tv_sec;      // TODO: change diff time calculation
         diff.tv_nsec = end.tv_nsec - start.tv_nsec;
