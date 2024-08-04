@@ -172,8 +172,10 @@ int main(int argc, char **argv) {
         for (int i = 0; i < ROOM_SIZE; i++) {
             players[i].speed = Vector2Scale(pack_in[i].player.move_dir, players[i].movespeed);
             players[i].pos = Vector2Add(players[i].pos, Vector2Scale(players[i].speed, diff.tv_sec + diff.tv_nsec/1e9));
+            players[i].dir = pack_in[i].player.dir;
 
             pack_out.players[i].pos = players[i].pos;
+            pack_out.players[i].dir = players[i].dir;
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {

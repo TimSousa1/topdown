@@ -7,6 +7,7 @@ typedef struct {
 
     struct {
         Vector2 move_dir;
+        Vector2 dir;
     } player;
 
 } packet_input;
@@ -16,6 +17,7 @@ typedef struct {
     struct {
         int id;
         Vector2 pos;
+        Vector2 dir;
     } players[ROOM_SIZE];
 
 } packet_output;

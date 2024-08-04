@@ -105,6 +105,7 @@ int main(int argc, char **argv) {
     InitWindow(screen.x, screen.y, "online multiplayer");
     SetTargetFPS(FPS);
     HideCursor();
+    SetWindowMonitor(0);
 
     // net
     int server_sock = setup_net(argv[1]);
@@ -173,6 +174,7 @@ int main(int argc, char **argv) {
         myself->pos = Vector2Add(myself->pos, Vector2Scale(myself->speed, GetFrameTime()));
 
         p_send.player.move_dir = move_dir;
+        p_send.player.dir = myself->dir;
         b = write(thread_s.pipe_fd[1], &p_send, sizeof(p_send));
         if (b == -1) {
             perror("Couldn't send packet to thread_s!\n");
@@ -183,6 +185,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < ROOM_SIZE; i++) {
             if (i == myself->id) continue; // not caring about what the server thinks of us for now.
             players[i].pos = p_recv.players[i].pos;
+            players[i].dir = p_recv.players[i].dir;
         }
 
         ClearBackground(DARKGRAY);
