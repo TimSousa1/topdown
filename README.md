@@ -1,10 +1,17 @@
-### BUILDING
+### BUILDING AND RUNNING
+##### CLIENT
 ```
-make
+cd src
 ```
-### USAGE
 ```
-./build/topdown
+./client.sh <ip>
+```
+##### SERVER
+```
+cd src
+```
+```
+./server.sh <local-ip>
 ```
 #### DEPENDENCIES
 You'll need raylib.
