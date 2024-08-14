@@ -19,4 +19,4 @@ You can install it on Arch Linux like this:
 ```
 sudo pacman -S raylib
 ```
-Otherwise check you package manager or try building it yourself.
+Otherwise check your package manager or try building it yourself.
