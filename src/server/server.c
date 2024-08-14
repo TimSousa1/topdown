@@ -1,7 +1,7 @@
 // game
 #include "game.h"
 #include "player.h"
-#include "server.h"
+#include "packets.h"
 
 // stdlib
 #include <netinet/in.h>

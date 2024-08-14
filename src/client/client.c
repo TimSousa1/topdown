@@ -2,7 +2,7 @@
 #include "game.h"
 #include "draw.h"
 #include "player.h"
-#include "server.h"
+#include "packets.h"
 
 // raylib
 #include <raylib.h>
