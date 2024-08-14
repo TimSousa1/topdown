@@ -1,21 +1,22 @@
 ### BUILDING AND RUNNING
 ##### CLIENT
 ```
-cd src
+make
 ```
 ```
-./client.sh <ip>
+./build/client/client <ip>
 ```
 ##### SERVER
 ```
-cd src
+make server
 ```
 ```
-./server.sh <local-ip>
+./build/server/server <local-ip>
 ```
 #### DEPENDENCIES
-You'll need raylib.
+You'll need raylib. \ 
 You can install it on Arch Linux like this: 
 ```
 sudo pacman -S raylib
 ```
+Otherwise check you package manager or try building it yourself.
