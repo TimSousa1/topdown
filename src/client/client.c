@@ -107,6 +107,10 @@ int main(int argc, char **argv) {
     HideCursor();
     SetWindowMonitor(0);
 
+	ClearBackground(DARKGRAY);
+	BeginDrawing();
+	EndDrawing();
+
     // net
     int server_sock = setup_net(argv[1]);
     Player players[ROOM_SIZE];
