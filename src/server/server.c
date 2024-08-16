@@ -194,6 +194,8 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < ROOM_SIZE; i++) {
             send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
+
+            if (players[i].id < 0) continue;
             if (cons[i].last_packet_timestamp > TICK_RATE * TIMEOUT_SECS) {
                 players[i].id *= -1; // player i has disconnected
             }
@@ -201,8 +203,7 @@ int main(int argc, char **argv) {
 
         // tickrate sleep
         clock_gettime(CLOCK_MONOTONIC, &end);
-        diff.tv_sec =
-            end.tv_sec - start.tv_sec; // TODO: change diff time calculation
+        diff.tv_sec = end.tv_sec - start.tv_sec; // TODO: change diff time calculation
         diff.tv_nsec = end.tv_nsec - start.tv_nsec;
 
         to_sleep.tv_sec = 0 - diff.tv_sec;
