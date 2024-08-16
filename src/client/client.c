@@ -131,13 +131,14 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < ROOM_SIZE; i++) {
         players[i].pos = initial.players[i].pos;
+        players[i].dir = initial.players[i].dir;
 
         if (initial.players[i].id < 0) {
             myself = &players[i];
-            myself->id *= -1;
             break;
         }
     }
+
     for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
     // exit if player is not set
     if (!myself) {
@@ -188,6 +189,8 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < ROOM_SIZE; i++) {
             if (i == myself->id) continue; // not caring about what the server thinks of us for now.
+
+            players[i].id = p_recv.players[i].id;
             players[i].pos = p_recv.players[i].pos;
             players[i].dir = p_recv.players[i].dir;
         }
@@ -197,12 +200,28 @@ int main(int argc, char **argv) {
         BeginDrawing();
         {
             for (int i = 0; i < ROOM_SIZE; i++) {
+                if (players[i].id < 0) continue;
                 draw_player(players[i], world, screen);
             }
             draw_debug(*myself, world, screen);
         }
         EndDrawing();
+
+        if (IsKeyPressed(KEY_BACKSPACE)) {
+            for (int i = 0; i < ROOM_SIZE; i++) {
+                print_player(players[i]);
+            }
+        }
+
     }
+
+    close(thread_r.pipe_fd[0]);
+    close(thread_r.pipe_fd[1]);
+
+    close(thread_s.pipe_fd[0]);
+    close(thread_s.pipe_fd[1]);
+
+    close(server_sock);
 
     return 0;
 }

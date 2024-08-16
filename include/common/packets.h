@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef PACKETS_H
+#define PACKETS_H
 #include <raylib.h>
 #include "game.h"
 
@@ -14,8 +14,11 @@ typedef struct {
 
 typedef struct {
 
+    int connected:1;
+
     struct {
         int id;
+        int alive:1;
         Vector2 pos;
         Vector2 dir;
     } players[ROOM_SIZE];
