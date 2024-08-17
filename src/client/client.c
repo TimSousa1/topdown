@@ -21,10 +21,22 @@
 
 #include <fcntl.h>
 
+typedef struct _bullet {
+
+    Vector2 pos;
+    Vector2 move_dir;
+    Vector2 look_dir;
+    struct _bullet *next;
+
+
+} bullet;
+
 
 typedef struct {
+
     int pipe_fd[2];
     int sock_fd;
+
 } thread_arg;
 
 
@@ -131,7 +143,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < ROOM_SIZE; i++) {
         players[i].pos = initial.players[i].pos;
-        players[i].dir = initial.players[i].dir;
+        players[i].look_dir = initial.players[i].look_dir;
 
         if (initial.players[i].id < 0) {
             myself = &players[i];
@@ -171,15 +183,15 @@ int main(int argc, char **argv) {
         Vector2 move_dir;
 
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
-        myself->dir = Vector2Subtract(myself->pos, myself->pointer_pos);
-        myself->dir = Vector2Scale(myself->dir, -1);
+        myself->look_dir = Vector2Subtract(myself->pos, myself->pointer_pos);
+        myself->look_dir = Vector2Scale(myself->look_dir, -1);
 
         move_dir = get_move_dir();
         myself->speed = Vector2Scale(move_dir, myself->movespeed);
         myself->pos = Vector2Add(myself->pos, Vector2Scale(myself->speed, GetFrameTime()));
 
         p_send.player.move_dir = move_dir;
-        p_send.player.dir = myself->dir;
+        p_send.player.look_dir = myself->look_dir;
         b = write(thread_s.pipe_fd[1], &p_send, sizeof(p_send));
         if (b == -1) {
             perror("Couldn't send packet to thread_s!\n");
@@ -192,7 +204,7 @@ int main(int argc, char **argv) {
 
             players[i].id = p_recv.players[i].id;
             players[i].pos = p_recv.players[i].pos;
-            players[i].dir = p_recv.players[i].dir;
+            players[i].look_dir = p_recv.players[i].look_dir;
         }
 
         ClearBackground(DARKGRAY);

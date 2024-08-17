@@ -23,14 +23,14 @@ void init_player(Player *player, Color color) {
     player->size = DEFAULT_PLAYER_SIZE;
     player->color = color;
     player->pointer_size = DEFAULT_POINTER_SIZE;
-    player->dir = (Vector2) {0, 1};
+    player->look_dir = (Vector2) {0, 1};
 }
 
 
 void print_player(Player player) {
     printf("id: %d, pos:(%f, %f)\nspeed:(%f, %f)\nsize:(%f)\npointer_pos:(%f, %f)\npointer_size:(%f)\nmovespeed:(%f)\ndir:(%f,%f)\n",
             player.id, player.pos.x, player.pos.y, player.speed.x, player.speed.y, player.size, player.pointer_pos.x, player.pointer_pos.y,
-            player.pointer_size, player.movespeed, player.dir.x, player.dir.y);
+            player.pointer_size, player.movespeed, player.look_dir.x, player.look_dir.y);
 }
 
 

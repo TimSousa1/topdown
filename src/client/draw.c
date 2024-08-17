@@ -28,7 +28,7 @@ void draw_player(Player player, Vector2 world, Vector2 screen) {
     pointer_screen_pos = Vector2Add(convert_spaces(player.pointer_pos, world, screen), Vector2Scale(pointer_screen_size, -.5));
     player_screen_pos = convert_spaces(player.pos, world, screen);
 
-    float angle = RAD2DEG * atanf(player.dir.y / player.dir.x);
+    float angle = RAD2DEG * atanf(player.look_dir.y / player.look_dir.x);
 
     DrawRectanglePro((Rectangle) {
                 .x = player_screen_pos.x, 
@@ -44,7 +44,7 @@ void draw_player(Player player, Vector2 world, Vector2 screen) {
 
 void draw_debug(Player player, Vector2 world, Vector2 screen) {
     Vector2 player_screen_pos = convert_spaces(player.pos, world, screen);
-    Vector2 dir_norm_screen = Vector2Add(convert_spaces(Vector2Scale(Vector2Normalize(player.dir), player.size), world, screen), player_screen_pos);
+    Vector2 dir_norm_screen = Vector2Add(convert_spaces(Vector2Scale(Vector2Normalize(player.look_dir), player.size), world, screen), player_screen_pos);
 
     DrawLine(player_screen_pos.x, player_screen_pos.y, dir_norm_screen.x, dir_norm_screen.y, GREEN);
 }

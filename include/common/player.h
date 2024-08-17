@@ -14,7 +14,7 @@ typedef struct {
     Vector2 speed;
 
     float size;
-    Vector2 dir;
+    Vector2 look_dir;
 
     Vector2 pointer_pos;
     float pointer_size;
