@@ -1,5 +1,6 @@
 // game
 #include "player.h"
+#include "game.h"
 
 // stdlib
 #include <stdio.h>
@@ -24,6 +25,14 @@ void init_player(Player *player, Color color) {
     player->color = color;
     player->pointer_size = DEFAULT_POINTER_SIZE;
     player->look_dir = (Vector2) {0, 1};
+
+    weapon w;
+    w.firerate = DEFAULT_FIRERATE;
+    w.bullet_size = DEFAULT_BULLET_SIZE;
+    w.bullet_speed = DEFAULT_BULLET_SPEED;
+    w.bullet_color = DEFAULT_BULLET_COLOR;
+
+    player->weapon = w;
 }
 
 
@@ -42,4 +51,14 @@ Vector2 get_move_dir(void) {
     move_dir.x += IsKeyDown(KEY_D);
 
     return Vector2Normalize(move_dir);
+}
+
+void print_bullet(bullet b) {
+    printf("owner: %d\n", b.owner);
+    printf("pos:");printv2(b.pos);puts("");
+    printf("speed:");printv2(b.speed);puts("");
+    printf("look_dir:");printv2(b.look_dir);puts("");
+    printf("move_dir:");printv2(b.move_dir);puts("");
+    printf("movespeed: %d", b.movespeed);puts("");
+    printf("size: %d\n", b.size);
 }

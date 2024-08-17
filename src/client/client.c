@@ -10,6 +10,7 @@
 
 // stdlib
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -21,16 +22,6 @@
 
 #include <fcntl.h>
 
-typedef struct _bullet {
-
-    Vector2 pos;
-    Vector2 move_dir;
-    Vector2 look_dir;
-    struct _bullet *next;
-
-
-} bullet;
-
 
 typedef struct {
 
@@ -38,6 +29,46 @@ typedef struct {
     int sock_fd;
 
 } thread_arg;
+
+
+int init_bullet(bullet *b, Player p) {
+    if (!b) return -1;
+
+    b->pos = p.pos;
+    b->look_dir = p.look_dir;
+    b->move_dir = p.look_dir;
+    b->speed = (Vector2){0, 0};// Vector2Scale(b->move_dir, p.weapon.bullet_speed);
+    b->movespeed = p.weapon.bullet_speed;
+    b->size = p.weapon.bullet_size;
+    b->color = p.weapon.bullet_color;
+
+    return 0;
+}
+
+
+int add_bullet_to_list(bullet **last, bullet **first) {
+    if (!last) return -1;
+
+    bullet *to_add = malloc (sizeof(bullet));
+    if (!to_add) return -1;
+    
+    if (!(*first)) {
+
+        *first = to_add;
+        (*first)->next = NULL;
+        (*first)->previous = NULL;
+
+        *last = *first;
+        return 0;
+    }
+
+    to_add->previous = *last;
+    (*last)->next = to_add;
+    *last = to_add;
+    (*last)->next = NULL;
+
+    return 0;
+}
 
 
 void *thread_send(void *info) {
@@ -53,14 +84,14 @@ void *thread_send(void *info) {
     return NULL;
 }
 
+
 void *thread_recv(void *info) {
     thread_arg arg = *(thread_arg*) info;
     packet_output pack;
 
     int b = 0;
     while (1) {
-        b = recv(arg.sock_fd, &pack, sizeof(pack), 0);
-        // printf("received move_dir: "); printv2(pack.pos); puts("");
+        b = recv(arg.sock_fd, &pack, sizeof(pack), 0); // printf("received move_dir: "); printv2(pack.pos); puts("");
         write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;
@@ -160,7 +191,6 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
 
-
     // thread
     thread_arg thread_s;
     pipe(thread_s.pipe_fd);
@@ -179,16 +209,31 @@ int main(int argc, char **argv) {
     packet_output p_recv = {0};
     int b = 0;
 
+
     while (!WindowShouldClose()) {
         Vector2 move_dir;
 
+        // get inputs
+        move_dir = get_move_dir();
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
+        if (IsKeyPressed(KEY_SPACE)) {
+            add_bullet_to_list(&(myself->last_bullet), &(myself->first_bullet));
+            init_bullet(myself->last_bullet, *myself);
+            print_bullet(*(myself->last_bullet));
+        }
+
+
         myself->look_dir = Vector2Subtract(myself->pos, myself->pointer_pos);
         myself->look_dir = Vector2Scale(myself->look_dir, -1);
+        myself->look_dir = Vector2Normalize(myself->look_dir);
 
-        move_dir = get_move_dir();
-        myself->speed = Vector2Scale(move_dir, myself->movespeed);
-        myself->pos = Vector2Add(myself->pos, Vector2Scale(myself->speed, GetFrameTime()));
+        myself->speed = Vector2Scale(move_dir, myself->movespeed * GetFrameTime());
+        myself->pos = Vector2Add(myself->pos, myself->speed);
+
+        for (bullet *it = myself->first_bullet; it; it = it->next) {
+            it->speed = Vector2Scale(it->move_dir, it->movespeed * GetFrameTime());
+            it->pos = Vector2Add(it->pos, it->speed);
+        }
 
         p_send.player.move_dir = move_dir;
         p_send.player.look_dir = myself->look_dir;
@@ -215,6 +260,7 @@ int main(int argc, char **argv) {
                 if (players[i].id < 0) continue;
                 draw_player(players[i], world, screen);
             }
+            draw_bullets(myself->first_bullet, world, screen);
             draw_debug(*myself, world, screen);
         }
         EndDrawing();
