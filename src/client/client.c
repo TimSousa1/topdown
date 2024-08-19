@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
         myself->pos = Vector2Add(myself->pos, myself->speed);
 
         for (int i = 0; i < MAX_BULLETS; i++) {
-            if (myself->bullets[i].empty) continue;
+            if (!myself->bullets[i].full) continue;
 
             myself->bullets[i].speed = Vector2Scale(myself->bullets[i].move_dir, myself->bullets[i].movespeed * GetFrameTime());
             myself->bullets[i].pos = Vector2Add(myself->bullets[i].pos, myself->bullets[i].speed);
