@@ -20,21 +20,23 @@ Vector2 convert_spaces(Vector2 vec, Vector2 spacefrom_size, Vector2 spaceto_size
 }
 
 
-void draw_bullets(bullet *head, Vector2 world, Vector2 screen) {
+void draw_bullets(bullet *a, Vector2 world, Vector2 screen) {
     Vector2 bullet_screen_pos, bullet_screen_size;
 
-    for (bullet *it = head; it; it = it->next) {
-        bullet_screen_pos = convert_spaces(it->pos, world, screen);
-        bullet_screen_size = convert_spaces(s2v2(it->size), world, screen);
+    for (int i = 0; i < MAX_BULLETS; i++, a++) {
+        if (a->empty) continue;
 
-        float angle = RAD2DEG * atanf(it->look_dir.y / it->look_dir.x);
+        bullet_screen_pos = convert_spaces(a->pos, world, screen);
+        bullet_screen_size = convert_spaces(s2v2(a->size), world, screen);
+
+        float angle = RAD2DEG * atanf(a->look_dir.y / a->look_dir.x);
         DrawRectanglePro((Rectangle) {
                 .x = bullet_screen_pos.x, 
                 .y = bullet_screen_pos.y,
                 .width = bullet_screen_size.x,
                 .height = bullet_screen_size.y
                 },
-                (Vector2) {bullet_screen_size.x/2, bullet_screen_size.y/2}, angle, it->color);
+                (Vector2) {bullet_screen_size.x/2, bullet_screen_size.y/2}, angle, a->color);
     }
 }
 

@@ -3,6 +3,8 @@
 
 #include <raylib.h>
 
+#define MAX_BULLETS 64
+
 #define DEFAULT_BULLET_SPEED 120
 #define DEFAULT_FIRERATE 5 // bullets per second
 #define DEFAULT_BULLET_SIZE 1
@@ -10,9 +12,13 @@
 #define DEFAULT_BULLET_COLOR PURPLE
 
 
+
 typedef struct _bullet {
 
-    int owner; // who fired the bullet?
+    // status
+    int empty:1;
+
+    // world
     Vector2 pos;
     Vector2 speed;
     int size;
@@ -21,9 +27,6 @@ typedef struct _bullet {
     Vector2 look_dir;
 
     Color color;
-
-    struct _bullet *next;
-    struct _bullet *previous;
 
 } bullet;
 
@@ -38,8 +41,10 @@ typedef struct {
 
 void print_bullet(bullet bullet);
 int init_bullet(bullet *b, Vector2 pos, Vector2 look_dir, weapon w);
-int add_bullet_to_list(bullet **last, bullet **first);
-int remove_bullet(bullet *b, bullet **first, bullet **last);
+
+bullet *find_empty(bullet *a, int num);
+int remove_bullet(bullet *b);
+
 int is_out_of_bounds(Vector2 pos, Vector2 world);
 
 #endif

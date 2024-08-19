@@ -54,7 +54,6 @@ Vector2 get_move_dir(void) {
 }
 
 void print_bullet(bullet b) {
-    printf("owner: %d\n", b.owner);
     printf("pos:");printv2(b.pos);puts("");
     printf("speed:");printv2(b.speed);puts("");
     printf("look_dir:");printv2(b.look_dir);puts("");

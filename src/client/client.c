@@ -144,6 +144,7 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 0; i < ROOM_SIZE; i++) print_player(players[i]);
+
     // exit if player is not set
     if (!myself) {
         printf("couldn't set YOUR player!\n");
@@ -178,15 +179,15 @@ int main(int argc, char **argv) {
         move_dir = get_move_dir();
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         if (IsKeyPressed(KEY_SPACE)) {
-            add_bullet_to_list(&myself->last_bullet, &myself->first_bullet);
-            init_bullet(myself->last_bullet, myself->pos, myself->look_dir, myself->weapon);
-            print_bullet(*(myself->last_bullet));
+            bullet *bul = find_empty(myself->bullets, sizeof(myself->bullets) / sizeof(bullet));
+            init_bullet(bul, myself->pos, myself->look_dir, myself->weapon);
+
+            print_bullet(*bul);
+
+            p_send.player.has_shot = 1;
         }
 
         if (IsKeyPressed(KEY_TAB)) {
-            for (bullet *it = myself->first_bullet; it; it = it->next) {
-                print_bullet(*it);
-            }
         }
 
         myself->look_dir = Vector2Subtract(myself->pos, myself->pointer_pos);
@@ -196,12 +197,14 @@ int main(int argc, char **argv) {
         myself->speed = Vector2Scale(move_dir, myself->movespeed * GetFrameTime());
         myself->pos = Vector2Add(myself->pos, myself->speed);
 
-        for (bullet *it = myself->first_bullet; it; it = it->next) {
-            it->speed = Vector2Scale(it->move_dir, it->movespeed * GetFrameTime());
-            it->pos = Vector2Add(it->pos, it->speed);
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (myself->bullets[i].empty) continue;
 
-            if (is_out_of_bounds(it->pos, world)) {
-                remove_bullet(it, &myself->first_bullet, &myself->last_bullet);
+            myself->bullets[i].speed = Vector2Scale(myself->bullets[i].move_dir, myself->bullets[i].movespeed * GetFrameTime());
+            myself->bullets[i].pos = Vector2Add(myself->bullets[i].pos, myself->bullets[i].speed);
+
+            if (is_out_of_bounds(myself->bullets[i].pos, world)) {
+                remove_bullet(myself->bullets + i);
             }
         }
 
@@ -230,7 +233,7 @@ int main(int argc, char **argv) {
                 if (players[i].id < 0) continue;
                 draw_player(players[i], world, screen);
             }
-            draw_bullets(myself->first_bullet, world, screen);
+            draw_bullets(myself->bullets, world, screen);
             draw_debug(*myself, world, screen);
         }
         EndDrawing();

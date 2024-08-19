@@ -25,8 +25,7 @@ typedef struct {
     Color color;
 
     weapon weapon;
-    bullet *first_bullet;
-    bullet *last_bullet;
+    bullet bullets[MAX_BULLETS];
 } Player;
 
 

@@ -1,7 +1,6 @@
 #include "bullets.h"
 
 #include <raylib.h>
-#include <stdlib.h>
 
 
 int init_bullet(bullet *b, Vector2 pos, Vector2 look_dir, weapon w) {
@@ -14,47 +13,24 @@ int init_bullet(bullet *b, Vector2 pos, Vector2 look_dir, weapon w) {
     b->movespeed = w.bullet_speed;
     b->size = w.bullet_size;
     b->color = w.bullet_color;
+    b->empty = 0;
 
     return 0;
 }
 
 
-int add_bullet_to_list(bullet **last, bullet **first) {
-    if (!last) return -1;
-
-    bullet *to_add = malloc (sizeof(bullet));
-    if (!to_add) return -1;
-    
-    if (!(*first)) {
-
-        *first = to_add;
-        (*first)->next = NULL;
-        (*first)->previous = NULL;
-
-        *last = *first;
-        return 0;
+bullet *find_empty(bullet *a, int num) {
+    for (int i = 0; i < num; i++, a++) {
+        if (a->empty) return a;
     }
 
-    to_add->previous = *last;
-    (*last)->next = to_add;
-    *last = to_add;
-    (*last)->next = NULL;
-
     return 0;
 }
 
 
-int remove_bullet(bullet *b, bullet **first, bullet **last) {
-    if (!b | !*first | !*last) return -1;
-
-    if (b == *first) *first = b->next;
-    else b->previous->next = b->next;
-
-    if (b == *last) *last = b->previous;
-    else b->next->previous = b->previous;
-
-    free(b);
-
+int remove_bullet(bullet *b) {
+    if (!b) return -1;
+    b->empty = 1;
     return 0;
 }
 
