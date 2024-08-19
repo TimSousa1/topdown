@@ -3,6 +3,7 @@
 #include "draw.h"
 #include "player.h"
 #include "packets.h"
+#include "bullets.h"
 
 // raylib
 #include <raylib.h>
@@ -29,46 +30,6 @@ typedef struct {
     int sock_fd;
 
 } thread_arg;
-
-
-int init_bullet(bullet *b, Player p) {
-    if (!b) return -1;
-
-    b->pos = p.pos;
-    b->look_dir = p.look_dir;
-    b->move_dir = p.look_dir;
-    b->speed = (Vector2){0, 0};// Vector2Scale(b->move_dir, p.weapon.bullet_speed);
-    b->movespeed = p.weapon.bullet_speed;
-    b->size = p.weapon.bullet_size;
-    b->color = p.weapon.bullet_color;
-
-    return 0;
-}
-
-
-int add_bullet_to_list(bullet **last, bullet **first) {
-    if (!last) return -1;
-
-    bullet *to_add = malloc (sizeof(bullet));
-    if (!to_add) return -1;
-    
-    if (!(*first)) {
-
-        *first = to_add;
-        (*first)->next = NULL;
-        (*first)->previous = NULL;
-
-        *last = *first;
-        return 0;
-    }
-
-    to_add->previous = *last;
-    (*last)->next = to_add;
-    *last = to_add;
-    (*last)->next = NULL;
-
-    return 0;
-}
 
 
 void *thread_send(void *info) {
@@ -217,11 +178,16 @@ int main(int argc, char **argv) {
         move_dir = get_move_dir();
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         if (IsKeyPressed(KEY_SPACE)) {
-            add_bullet_to_list(&(myself->last_bullet), &(myself->first_bullet));
-            init_bullet(myself->last_bullet, *myself);
+            add_bullet_to_list(&myself->last_bullet, &myself->first_bullet);
+            init_bullet(myself->last_bullet, myself->pos, myself->look_dir, myself->weapon);
             print_bullet(*(myself->last_bullet));
         }
 
+        if (IsKeyPressed(KEY_TAB)) {
+            for (bullet *it = myself->first_bullet; it; it = it->next) {
+                print_bullet(*it);
+            }
+        }
 
         myself->look_dir = Vector2Subtract(myself->pos, myself->pointer_pos);
         myself->look_dir = Vector2Scale(myself->look_dir, -1);
@@ -233,6 +199,10 @@ int main(int argc, char **argv) {
         for (bullet *it = myself->first_bullet; it; it = it->next) {
             it->speed = Vector2Scale(it->move_dir, it->movespeed * GetFrameTime());
             it->pos = Vector2Add(it->pos, it->speed);
+
+            if (is_out_of_bounds(it->pos, world)) {
+                remove_bullet(it, &myself->first_bullet, &myself->last_bullet);
+            }
         }
 
         p_send.player.move_dir = move_dir;
