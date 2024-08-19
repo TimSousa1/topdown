@@ -24,7 +24,7 @@ void draw_bullets(bullet *a, Vector2 world, Vector2 screen) {
     Vector2 bullet_screen_pos, bullet_screen_size;
 
     for (int i = 0; i < MAX_BULLETS; i++, a++) {
-        if (a->empty) continue;
+        if (!a->full) continue;
 
         bullet_screen_pos = convert_spaces(a->pos, world, screen);
         bullet_screen_size = convert_spaces(s2v2(a->size), world, screen);

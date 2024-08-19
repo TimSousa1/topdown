@@ -16,7 +16,7 @@
 typedef struct _bullet {
 
     // status
-    int empty:1;
+    int full:1;
 
     // world
     Vector2 pos;

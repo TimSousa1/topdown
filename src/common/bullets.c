@@ -13,7 +13,7 @@ int init_bullet(bullet *b, Vector2 pos, Vector2 look_dir, weapon w) {
     b->movespeed = w.bullet_speed;
     b->size = w.bullet_size;
     b->color = w.bullet_color;
-    b->empty = 0;
+    b->full = 1;
 
     return 0;
 }
@@ -21,7 +21,7 @@ int init_bullet(bullet *b, Vector2 pos, Vector2 look_dir, weapon w) {
 
 bullet *find_empty(bullet *a, int num) {
     for (int i = 0; i < num; i++, a++) {
-        if (a->empty) return a;
+        if (!a->full) return a;
     }
 
     return 0;
@@ -30,7 +30,7 @@ bullet *find_empty(bullet *a, int num) {
 
 int remove_bullet(bullet *b) {
     if (!b) return -1;
-    b->empty = 1;
+    b->full = 0;
     return 0;
 }
 
