@@ -3,6 +3,7 @@
 #include "packets.h"
 #include "player.h"
 #include "server.h"
+#include "bullets.h"
 
 // stdlib
 #include <netinet/in.h>
@@ -107,6 +108,10 @@ int main(int argc, char **argv) {
         perror("Missing argument!\nUsage: ./server <local ip>");
         return -1;
     }
+
+    // world
+    Vector2 world = {WORLD_W, WORLD_H};
+
     char *server_ip = argv[1];
 
     struct con_t server = setup_net(server_ip);
@@ -169,6 +174,7 @@ int main(int argc, char **argv) {
     struct timespec diff = {0};
     while (1) {
 
+        double deltaT = diff.tv_sec + diff.tv_nsec / 1e9;
         struct timespec start, end, to_sleep;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -183,13 +189,34 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            players[i].speed = Vector2Scale(pack_in[i].player.move_dir, players[i].movespeed);
-            players[i].pos = Vector2Add(players[i].pos, Vector2Scale(players[i].speed, diff.tv_sec + diff.tv_nsec / 1e9));
+            players[i].speed = Vector2Scale(pack_in[i].player.move_dir, players[i].movespeed * deltaT);
+            players[i].pos = Vector2Add(players[i].pos, players[i].speed);
             players[i].look_dir = pack_in[i].player.look_dir;
 
             pack_out.players[i].id = players[i].id;
             pack_out.players[i].pos = players[i].pos;
             pack_out.players[i].look_dir = players[i].look_dir;
+
+            for (int j = 0; j < MAX_BULLETS; j++) {
+                bullet *b = pack_out.players[i].bullets + j;
+                if (!b->full) continue;
+
+                print_bullet(*b);
+                b->speed = Vector2Scale(b->move_dir, b->movespeed * deltaT);
+                b->pos = Vector2Add(b->pos, b->speed);
+
+                if (is_out_of_bounds(b->pos, world)) {
+                    remove_bullet(b);
+                }
+            }
+
+            if (pack_in[i].player.has_shot) {
+                bullet *b = find_empty(pack_out.players[i].bullets, MAX_BULLETS);
+                if (b) {
+                    init_bullet(b, players[i].pos, players[i].look_dir, players[i].weapon);
+                }
+
+            }
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {

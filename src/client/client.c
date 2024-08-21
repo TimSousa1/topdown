@@ -167,12 +167,11 @@ int main(int argc, char **argv) {
     pthread_create(&threads[0], NULL, thread_send, &thread_s);
     pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
-    packet_input p_send = {0};
-    packet_output p_recv = {0};
     int b = 0;
-
-
     while (!WindowShouldClose()) {
+        packet_input p_send = {0};
+        packet_output p_recv = {0};
+
         Vector2 move_dir;
 
         // get inputs
@@ -230,9 +229,11 @@ int main(int argc, char **argv) {
         BeginDrawing();
         {
             for (int i = 0; i < ROOM_SIZE; i++) {
-                if (players[i].id < 0) continue;
+                if (players[i].id == myself->id) continue;
                 draw_player(players[i], world, screen);
+                draw_bullets(p_recv.players[i].bullets, world, screen);
             }
+            draw_player(*myself, world, screen);
             draw_bullets(myself->bullets, world, screen);
             draw_debug(*myself, world, screen);
         }
