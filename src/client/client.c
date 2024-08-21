@@ -50,9 +50,21 @@ void *thread_recv(void *info) {
     thread_arg arg = *(thread_arg*) info;
     packet_output pack;
 
-    int b = 0;
     while (1) {
-        b = recv(arg.sock_fd, &pack, sizeof(pack), 0); // printf("received move_dir: "); printv2(pack.pos); puts("");
+
+        int n, b;
+        for (b = 0, n = 0; b < sizeof(pack); b = MAX(b, sizeof(pack)), n++) {
+            b += recv(arg.sock_fd, &pack + b, sizeof(pack) - b, 0);
+        }
+
+        printf("--- PACKET ---\n");
+        for (int i = 0; i < ROOM_SIZE; i++) {
+            printf("%d/%ld | %d\n", b, sizeof(pack), n);
+            printf("--- id: %d ---\n", pack.players[i].id);
+            printf("alive: %d\n", pack.players[i].id);
+            printv2(pack.players[i].pos);puts("");
+            printv2(pack.players[i].look_dir);puts("");
+        }
         write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;
@@ -168,10 +180,11 @@ int main(int argc, char **argv) {
     pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
     int b = 0;
+    packet_input p_send = {0};
+    packet_output p_recv = {0};
     while (!WindowShouldClose()) {
-        packet_input p_send = {0};
-        packet_output p_recv = {0};
 
+        p_send.player.has_shot = 0;
         Vector2 move_dir;
 
         // get inputs
@@ -179,11 +192,11 @@ int main(int argc, char **argv) {
         myself->pointer_pos = convert_spaces(GetMousePosition(), screen, world);
         if (IsKeyPressed(KEY_SPACE)) {
             bullet *bul = find_empty(myself->bullets, sizeof(myself->bullets) / sizeof(bullet));
-            init_bullet(bul, myself->pos, myself->look_dir, myself->weapon);
-
-            print_bullet(*bul);
-
-            p_send.player.has_shot = 1;
+            if (bul) {
+                init_bullet(bul, myself->pos, myself->look_dir, myself->weapon);
+                print_bullet(*bul);
+                p_send.player.has_shot = 1;
+            }
         }
 
         if (IsKeyPressed(KEY_TAB)) {

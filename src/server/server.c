@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
                 bullet *b = pack_out.players[i].bullets + j;
                 if (!b->full) continue;
 
-                print_bullet(*b);
+                // print_bullet(*b);
                 b->speed = Vector2Scale(b->move_dir, b->movespeed * deltaT);
                 b->pos = Vector2Add(b->pos, b->speed);
 
@@ -220,8 +220,20 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
+            ulong b = send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
 
+            if (i == 0) {
+                printf("--- PACKET ---\n");
+                printf("bytes: %ld\n", b);
+                for (int i = 0; i < ROOM_SIZE; i++) {
+                    printf("--- id: %d ---\n", pack_out.players[i].id);
+                    printf("alive: %d\n", pack_out.players[i].id);
+                    printv2(pack_out.players[i].pos);puts("");
+                    printv2(pack_out.players[i].look_dir);puts("");
+                }
+            }
+
+            // TODO: handle disconnected players
             if (players[i].id < 0) continue;
             if (cons[i].last_packet_timestamp > TICK_RATE * TIMEOUT_SECS) {
                 players[i].id *= -1; // player i has disconnected

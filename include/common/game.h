@@ -14,6 +14,8 @@
 #define printv2(a) printf("(%.2f, %.2f)", a.x, a.y)
 #define s2v2(a) (Vector2) {a, a}
 
+#define MAX(a, b) a > b ? a : b
+
 #define PORT "44556"
 #define ROOM_SIZE 2
 
