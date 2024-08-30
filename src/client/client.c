@@ -131,7 +131,8 @@ int main(int argc, char **argv) {
     }
 
     // get all initial player info
-    recv(server_sock, &initial, sizeof(initial), 0);
+    int error = 0, b = 0, n = 0;
+    initial = read_packet_out(server_sock, &error, &b, &n);
 
     for (int i = 0; i < ROOM_SIZE; i++) {
         printf("id:%d, pos:(%f, %f)\n", initial.players[i].id, initial.players[i].pos.x, initial.players[i].pos.y);
@@ -171,7 +172,7 @@ int main(int argc, char **argv) {
     pthread_create(&threads[0], NULL, thread_send, &thread_s);
     pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
-    int b = 0;
+    b = 0;
     while (!WindowShouldClose()) {
         packet_input p_send = {0};
         packet_output p_recv = {0};

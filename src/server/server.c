@@ -143,13 +143,17 @@ int main(int argc, char **argv) {
 
     // initial id's have to start at 1 since -0 doesn't exist (it does, but you
     // get me :) )
-    printf("----- PACKET -----\n");
     for (int i = 0; i < ROOM_SIZE; i++) {
+        int b = 0, n = 0, error = 0;
         initial.players[i].id = -(i + 1); // a negative id tells the connection what
                                           // it's index is on the server
-        printf("id:%d pos:(%f, %f)\n", initial.players[i].id,
-                initial.players[i].pos.x, initial.players[i].pos.y);
-        send(cons[i].sock_fd, &initial, sizeof(initial), 0);
+        printf("id:%d pos:(%f, %f)\n", initial.players[i].id, initial.players[i].pos.x, initial.players[i].pos.y);
+
+        send_packet_out(cons[i].sock_fd, initial, &error, &b, &n);
+        print_packet_out(initial, b, n);
+
+        if (error) players[i].id = -i;
+
         initial.players[i].id = i + 1;
     }
 

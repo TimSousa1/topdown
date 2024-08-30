@@ -36,7 +36,9 @@ typedef struct {
 
 // reads from file descriptor `read_from` and returns error status on `*error`
 // b and n will also be written to `bo` and `no` if provided
-packet_output read_packet_out(int read_from, int *error, int *bo, int *no);
+packet_output read_packet_out(int read_fd, int *error, int *bo, int *no);
+
+int send_packet_out(int send_fd, packet_output pack, int *error, int *bo, int *no);
 
 // packet `p`, number of bytes read `b`, number of times ran recv `n`
 void print_packet_out(packet_output p, int b, int n);
