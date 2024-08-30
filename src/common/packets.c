@@ -9,7 +9,7 @@ packet_output read_packet_out(int read_from, int *error, int *bo, int *no) {
     int b, n, c;
 
     for (b = 0, n = 0, c = 0; b < sizeof(pack); n++, b += c) {
-        c += recv(read_from, &pack + b, sizeof(pack) - b, 0);
+        c = recv(read_from, &pack + b, sizeof(pack) - b, 0);
         if (c == -1) break;
     }
 
