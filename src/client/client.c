@@ -133,6 +133,7 @@ int main(int argc, char **argv) {
     // get all initial player info
     int error = 0, b = 0, n = 0;
     initial = read_packet_out(server_sock, &error, &b, &n);
+    print_packet_out(initial, b, n);
 
     for (int i = 0; i < ROOM_SIZE; i++) {
         printf("id:%d, pos:(%f, %f)\n", initial.players[i].id, initial.players[i].pos.x, initial.players[i].pos.y);
