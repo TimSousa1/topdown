@@ -48,11 +48,15 @@ void *thread_send(void *info) {
 
 void *thread_recv(void *info) {
     thread_arg arg = *(thread_arg*) info;
-    packet_output pack;
 
-    int b = 0;
+    int b = 0, n = 0;
+    int c = 0;
+    int to_skip;
     while (1) {
-        b = recv(arg.sock_fd, &pack, sizeof(pack), 0); // printf("received move_dir: "); printv2(pack.pos); puts("");
+        packet_output pack = read_packet_out(arg.sock_fd, &to_skip, &b, &n);
+        if (to_skip) continue;
+
+        print_packet_out(pack, b, n);
         write(arg.pipe_fd[1], &pack, sizeof(pack));
     }
     return NULL;

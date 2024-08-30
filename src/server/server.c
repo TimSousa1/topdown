@@ -220,7 +220,9 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
+            for (int b = 0; b < sizeof(pack_out);) {
+                b += send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
+            }
 
             if (players[i].id < 0) continue;
             if (cons[i].last_packet_timestamp > TICK_RATE * TIMEOUT_SECS) {
