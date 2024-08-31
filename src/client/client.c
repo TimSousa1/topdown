@@ -174,9 +174,9 @@ int main(int argc, char **argv) {
     pthread_create(&threads[1], NULL, thread_recv, &thread_r);
 
     b = 0;
+    packet_output p_recv = {0};
     while (!WindowShouldClose()) {
         packet_input p_send = {0};
-        packet_output p_recv = {0};
 
         Vector2 move_dir;
 
@@ -237,6 +237,7 @@ int main(int argc, char **argv) {
             for (int i = 0; i < ROOM_SIZE; i++) {
                 if (players[i].id == myself->id) continue;
                 draw_player(players[i], world, screen);
+                draw_debug(players[i], world, screen);
                 draw_bullets(p_recv.players[i].bullets, world, screen);
             }
             draw_player(*myself, world, screen);

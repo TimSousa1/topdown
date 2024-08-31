@@ -9,7 +9,7 @@
 #define WORLD_W 150
 #define WORLD_H 100
 
-#define FPS 60
+#define FPS 128
 
 #define printv2(a) printf("(%.2f, %.2f)", a.x, a.y)
 #define s2v2(a) (Vector2) {a, a}
