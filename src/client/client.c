@@ -54,7 +54,7 @@ void *thread_recv(void *info) {
     int to_skip;
     while (1) {
         packet_output pack = read_packet_out(arg.sock_fd, &to_skip, &b, &n);
-        if (to_skip) continue;
+        if (to_skip) {printf("ERROR: (read_packet_out)\n"); continue;}
 
         print_packet_out(pack, b, n);
         write(arg.pipe_fd[1], &pack, sizeof(pack));

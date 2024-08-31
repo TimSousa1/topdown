@@ -4,6 +4,8 @@
 #include "game.h"
 #include "bullets.h"
 
+#define PACK_SIZE 512
+
 
 typedef struct {
 

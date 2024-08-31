@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
         send_packet_out(cons[i].sock_fd, initial, &error, &b, &n);
         print_packet_out(initial, b, n);
 
-        if (error) players[i].id = -i;
+        if (error) {printf("ERROR: (send_packet_out)");players[i].id = -i;}
 
         initial.players[i].id = i + 1;
     }
@@ -224,9 +224,9 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < ROOM_SIZE; i++) {
-            for (int b = 0; b < sizeof(pack_out);) {
-                b += send(cons[i].sock_fd, &pack_out, sizeof(pack_out), MSG_NOSIGNAL);
-            }
+            int error = 0, b = 0, n = 0;
+            send_packet_out(cons[i].sock_fd, pack_out, &error, &b, &n);
+            if (error) perror("main_loop: [ERROR] -> send_packet_out");
 
             if (players[i].id < 0) continue;
             if (cons[i].last_packet_timestamp > TICK_RATE * TIMEOUT_SECS) {
